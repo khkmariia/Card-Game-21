@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Game "21"</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #0b5939;
+      color: #fffaf0;
+    }
+    .container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 35px 20px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-family: Georgia, serif;
+      font-size: clamp(32px, 5vw, 48px);
+      letter-spacing: 3px;
+      text-align: center;
+    }
+    .subtitle {
+      margin: 0 0 35px;
+      color: #e7c77b;
+      font-size: 12px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    .table {
+      width: min(100%, 760px);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: 20px;
+    }
+    .block {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px 15px;
+      background: #104b34;
+      border: 1px solid #327653;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px #003d2940;
+    }
+    .player {
+      margin: 0 0 15px;
+      font-size: 17px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    .score {
+      width: 100%;
+      padding: 12px 5px;
+      margin-bottom: 18px;
+      background: #f9f4e8;
+      color: #174b35;
+      border-radius: 9px;
+      text-align: center;
+    }
+    .scoreText {
+      margin: 0;
+      font-size: 13px;
+    }
+    .scoreText span {
+      display: block;
+      margin-top: 3px;
+      font-size: 27px;
+      font-weight: bold;
+    }
+    .card {
+      width: 110px;
+      height: 165px;
+      max-width: 100%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      filter: drop-shadow(0 5px 5px #002c1d55);
+      transition: transform 0.2s;
+    }
+    .card:not(:empty):hover {
+      transform: translateY(-4px);
+    }
+    .game {
+      width: min(100%, 760px);
+      margin-top: 22px;
+      padding: 22px;
+      text-align: center;
+      background: #104b34;
+      border: 1px solid #327653;
+      border-radius: 16px;
+    }
+    .amount {
+      margin-bottom: 16px;
+      color: #e7c77b;
+      font-size: 14px;
+    }
+    .button {
+      width: 100%;
+      max-width: 260px;
+      padding: 14px 24px;
+      background: #e7c77b;
+      color: #173c2b;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .button:hover:not(:disabled) {
+      background: #f5dda0;
+      transform: translateY(-2px);
+    }
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .result {
+      min-height: 24px;
+      margin: 18px 0 0;
+      color: #f5dda0;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+    .decoration {
+      margin-top: 22px;
+      color: #e7c77b;
+      font-size: 22px;
+      letter-spacing: 12px;
+    }
+    @media (max-width: 520px) {
+      .container {
+        padding: 25px 12px;
+      }
+      .table {
+        gap: 10px;
+      }
+      .block {
+        padding: 18px 8px;
+      }
+      .player {
+        font-size: 14px;
+      }
+      .card {
+        width: 85px;
+        height: 128px;
+      }
+      .scoreText {
+        font-size: 11px;
+      }
+      .scoreText span {
+        font-size: 23px;
+      }
+      .game {
+        padding: 18px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>♠ 21 ♠</h1>
+    <p class="subtitle">Card Game · You vs Computer</p>
+    <div class="table">
+      <section class="block">
+        <h2 class="player name">User</h2>
+        <div class="score">
+          <p class="scoreText">
+            YOUR SCORE
+            <span class="scoreTextUser">0</span>
+          </p>
+        </div>
+        <div class="card cardUser"></div>
+      </section>
+      <section class="block">
+        <h2 class="player">Computer</h2>
+        <div class="score">
+          <p class="scoreText">
+            COMPUTER SCORE
+            <span class="scoreTextComputer">0</span>
+          </p>
+        </div>
+        <div class="card cardComputer"></div>
+      </section>
+    </div>
+    <section class="game">
+      <div class="amount">Round 0 of 3</div>
+      <button class="button">DEAL CARDS</button>
+      <p class="result" aria-live="polite">Ready to play?</p>
+    </section>
+    <div class="decoration">♠ ♠ ♠</div>
+  </main>
+  <script>
+    let userName;
+    const getUserName = () => {
+      while (!userName) {
+        userName = prompt("Please enter your name:");
+        if (userName === null) {
+          userName = "User";
+          break;
+        }
+        userName = userName.trim();
+        if (!userName) {
+          alert("Please enter your name.");
+        }
+      }
+      document.querySelector('.name').textContent = userName;
+    };
+    const generateRandomNumber = () => {
+      const numbers = [6, 7, 8, 9, 10, 2, 3, 4, 11];
+      return numbers[Math.floor(Math.random() * numbers.length)];
+    };
+    const cards = {
+      6: './6.png',
+      7: './7.png',
+      8: './8.png',
+      9: './9.png',
+      10: './10.png',
+      2: './jack.png',
+      3: './queen.png',
+      4: './king.png',
+      11: './ace.png'
+    };
+    const score = {
+      user: 0,
+      computer: 0
+    };
+    let amount = 0;
+    const updateText = () => {
+      document.querySelector('.scoreTextUser').textContent = score.user;
+      document.querySelector('.scoreTextComputer').textContent = score.computer;
+      document.querySelector('.amount').textContent = `Round ${amount} of 3`;
+    };
+    const reset = () => {
+      score.user = 0;
+      score.computer = 0;
+      amount = 0;
+      updateText();
+      document.querySelector('.cardUser').style.backgroundImage = 'none';
+      document.querySelector('.cardComputer').style.backgroundImage = 'none';
+      document.querySelector('.result').textContent = 'Ready to play?';
+      document.querySelector('.button').disabled = false;
+    };
+    const check = () => {
+      if (amount === 3) {
+        let message;
+        if (score.user > score.computer) {
+          message = `${userName} has won!`;
+        } else if (score.user < score.computer) {
+          message = 'Computer has won!';
+        } else {
+          message = 'It is a tie!';
+        }
+        document.querySelector('.result').textContent =
+          `${message} Final score: ${score.user} - ${score.computer}`;
+        document.querySelector('.button').disabled = true;
+        setTimeout(() => {
+          alert(`${message}\nFinal score: ${score.user} - ${score.computer}`);
+          reset();
+        }, 500);
+      }
+    };
+    document.querySelector('.button').addEventListener('click', () => {
+      if (amount >= 3) return;
+      amount++;
+      const userNumber = generateRandomNumber();
+      const computerNumber = generateRandomNumber();
+      document.querySelector('.cardUser').style.backgroundImage =
+        `url("${cards[userNumber]}")`;
+      document.querySelector('.cardComputer').style.backgroundImage =
+        `url("${cards[computerNumber]}")`;
+      score.user += userNumber;
+      score.computer += computerNumber;
+      updateText();
+      check();
+    });
+    getUserName();
+  </script>
+</body>
+</html>
